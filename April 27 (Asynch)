@@ -1,0 +1,71 @@
+import numpy as np
+import pandas as pd
+#Data visualization package for Python
+import arviz             as az
+import matplotlib.pyplot as plt
+#Bayesian package for Python
+import pymc3 as pm
+
+seed = 0
+rng = np.random.default_rng(seed)
+
+%config InlineBackend.figure_format = 'retina'
+az.style.use("arviz-darkgrid")
+
+size = 200
+
+x  = np.linspace(0, 1, size)
+xb = 1 + 2 * x
+y  = 1 + 2 * x + np.random.normal(scale=1, size=size)
+
+data = pd.DataFrame(dict(x=x, y=y))
+
+fig = plt.figure(figsize=(7, 7))
+
+plt.scatter(x, y, label="data")
+plt.plot(x, xb, label="population regression line", c='red', lw=5, linestyle='dashed')
+plt.xlabel('x')
+plt.ylabel('y')
+
+plt.legend()
+plt.show()
+
+with pm.Model() as model:  # model specifications in PyMC3 are wrapped in a with-statement
+    
+    # Define priors
+    sigma = pm.HalfCauchy("sigma", beta=10, testval=1.0)
+    intercept = pm.Normal("Intercept", 0, sigma=20)
+    x_coeff = pm.Normal("x", 0, sigma=20)
+
+    # Define likelihood
+    likelihood = pm.Normal("y", mu=intercept + x_coeff * x, sigma=sigma, observed=y)
+
+    # Inference
+    trace = pm.sample(10000, cores=16, return_inferencedata=True)
+    
+plt.figure(figsize=(7, 5))
+
+plt.scatter(x, y, c='blue', label="data")
+pm.plot_posterior_predictive_glm(trace, samples=100, label="posterior predictive regression lines")
+plt.plot(x, xb, label="population regression line", lw=3.0, c="r", linestyle='dashed')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.ylim(-2,7)
+
+plt.legend()
+
+plt.show()
+
+fig = plt.subplots(figsize=(8,6))
+
+plt.subplot(2, 1, 1)
+plt.scatter(x, y, c='dodgerblue')
+pm.plot_posterior_predictive_glm(trace, samples=100, label="posterior predictive regression lines")
+plt.plot(x, xb, label="population regression line", lw=3.0, c="r", linestyle='dashed')
+plt.title("Bayesian regression")
+plt.ylim(-2.5,5.5)
+plt.legend()
+
+
+#source code: isaac2math. (2022, January 22). Bayes_comp_stat/#4_Bayesian_regression/Bayesian_regression.ipynb at main · isaac2math/Bayes_comp_stat. GitHub. https://github.com/isaac2math/Bayes_comp_stat/blob/main/%234_Bayesian_regression/Bayesian_regression.ipynb
