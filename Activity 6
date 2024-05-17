@@ -1,0 +1,39 @@
+#For our next discussion, we will discuss How to use Bayesian Inference for predictions in Python. 
+For your task today, research for probability distributions (especially uniform dist) and how do we use Bayesian inference to these distributions. You can use AI for research and create samples.
+#sample code: chatgpt
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import beta
+# Number of flips and number of heads observed
+n_flips = 10
+n_heads = 6
+# Prior belief: Uniform distribution (Beta distribution with alpha=1, beta=1)
+prior_alpha = 1
+prior_beta = 1
+
+# Likelihood function: Binomial distribution
+likelihood = lambda p: p**n_heads * (1-p)**(n_flips - n_heads)
+
+# Posterior distribution: Beta distribution
+posterior_alpha = prior_alpha + n_heads
+posterior_beta = prior_beta + n_flips - n_heads
+
+# Generate values of p for plotting
+p_values = np.linspace(0, 1, 1000)
+
+# Calculate prior, likelihood, and posterior
+prior = beta.pdf(p_values, prior_alpha, prior_beta)
+likelihood_values = likelihood(p_values)
+posterior = beta.pdf(p_values, posterior_alpha, posterior_beta)
+
+# Plotting
+plt.figure(figsize=(10, 5))
+plt.plot(p_values, prior, label='Prior (Uniform)')
+plt.plot(p_values, likelihood_values, label='Likelihood')
+plt.plot(p_values, posterior, label='Posterior')
+plt.xlabel('Probability of Heads (p)')
+plt.ylabel('Probability Density')
+plt.title('Bayesian Inference with Uniform Prior')
+plt.legend()
+plt.show()
